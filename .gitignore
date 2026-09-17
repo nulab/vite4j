@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+
+# IDE
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Java
+*.class
+hs_err_pid*
+replay_pid*

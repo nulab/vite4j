@@ -1,0 +1,50 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.nulab-inc'
+archivesBaseName = 'vite4j'
+version = project.property('version')
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // compileOnly: JacksonManifestParser uses it, nothing else does, and it is not passed on to
+    // whoever depends on this. Applications that have Jackson - which is most of them - get the
+    // parser at whatever version they already run; the rest implement ManifestParser instead.
+    compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+javadoc {
+    options.locale = 'en_US'
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+    title = 'vite4j ' + version + ' API'
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': archivesBaseName,
+                'Implementation-Version': archiveVersion,
+                'Automatic-Module-Name': 'com.nulabinc.vite4j')
+    }
+}
