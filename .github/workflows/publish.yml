@@ -1,0 +1,58 @@
+name: Publish to central repository
+
+# Never on a push. A version on Central can neither be replaced nor withdrawn, so releasing stays
+# something a person decides to do, having looked at what is about to go out.
+on:
+  workflow_dispatch
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+
+      - run: chmod +x gradlew
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Stage the artifacts
+        run: ./gradlew publish
+
+      - name: Import the signing key
+        env:
+          GPG_TTY: /dev/tty
+        run: echo "${{ secrets.SIGNING_SECRET_KEY_RING_FILE }}" | base64 --decode | gpg --batch --import
+
+      - name: Sign and upload
+        run: |
+          ./gradlew \
+            -Djreleaser.signing.active=ALWAYS \
+            -Djreleaser.signing.mode=COMMAND \
+            jreleaserFullRelease
+        env:
+          JRELEASER_SIGNING_MODE: COMMAND
+          JRELEASER_GPG_KEYNAME: ${{ secrets.SIGNING_KEY_ID }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.SIGNING_PASSWORD }}
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USER_NAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Keep the log from a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-log
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

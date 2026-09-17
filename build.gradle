@@ -1,5 +1,8 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'org.jreleaser' version '1.17.0'
 }
 
 group = 'com.nulab-inc'
@@ -46,5 +49,44 @@ jar {
         attributes('Implementation-Title': archivesBaseName,
                 'Implementation-Version': archiveVersion,
                 'Automatic-Module-Name': 'com.nulabinc.vite4j')
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = 'vite4j'
+                description = "Read Vite's build manifest from a JVM backend and render the tags a page needs."
+                url = 'https://github.com/nulab/vite4j'
+                scm {
+                    connection = 'https://github.com/nulab/vite4j.git'
+                    developerConnection = 'https://github.com/nulab/vite4j.git'
+                    url = 'https://github.com/nulab/vite4j.git'
+                }
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/license/mit/'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'katayama8000'
+                        name = 'Tatsufumi Katayama'
+                        email = 'tatsufumi.katayama@nulab.com'
+                    }
+                }
+            }
+        }
+    }
+
+    // JReleaser signs and uploads what lands here; nothing leaves the machine during a build.
+    repositories {
+        maven {
+            name = 'Staging'
+            url = uri(layout.buildDirectory.dir('staging-deploy'))
+        }
     }
 }
