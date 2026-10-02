@@ -2,6 +2,8 @@
 
 [日本語](README.ja.md)
 
+https://central.sonatype.com/artifact/com.nulab-inc/vite4j
+
 Render the tags a [Vite](https://vite.dev) entry needs, from a JVM backend.
 
 Vite rewrites the tags in its own `index.html`. A page your backend renders is markup Vite never sees,
