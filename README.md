@@ -179,6 +179,30 @@ Central:
 | `CENTRAL_PORTAL_USER` | Central Portal user token, generated under Account |
 | `CENTRAL_PORTAL_PASSWORD` | The token's password half |
 
+Set each from a file or with `printf`, never by pasting into a web form and never with `echo`:
+
+```
+gpg --armor --export-secret-keys <key-id> > key.asc
+gh secret set GPG_SECRET_KEY < key.asc
+printf '%s' '<passphrase>' | gh secret set SIGNING_PASSWORD
+```
+
+Every one of these values breaks if a character is added or lost, and the failures name the wrong
+thing. A key whose line breaks were lost to a chat window is reported as a missing **public** key,
+however well-formed the public one is. A passphrase carrying the newline `echo` adds surfaces as
+`checksum mismatch in checksum of 20 bytes`, from deep in a stack trace that only `jreleaser-log`
+holds. Wrong Central credentials are the one honest message of the three: a plain 401.
+
+The workflow can also be run by hand, which walks the whole release as a dry run and uploads
+nothing — worth doing after changing the signing key:
+
+```
+gh workflow run publish.yml --ref main -f version=0.0.0-rehearsal
+```
+
+It does not reach Central, so it proves the key and the passphrase but says nothing about whether
+the Portal credentials are good.
+
 ## License
 
 MIT — see [LICENSE.txt](LICENSE.txt).
