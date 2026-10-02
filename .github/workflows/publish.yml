@@ -5,6 +5,14 @@ name: Publish to central repository
 on:
   release:
     types: [published]
+  # A rehearsal: builds, signs and walks the whole deploy, but uploads nothing. For checking the
+  # credentials without spending a version, since one on Central cannot be taken back.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to rehearse with
+        required: true
+        default: 0.0.0-rehearsal
 
 jobs:
   publish:
@@ -17,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.ref }}
 
       - uses: actions/setup-java@v6
         with:
@@ -33,7 +41,31 @@ jobs:
         id: version
         env:
           TAG: ${{ github.event.release.tag_name }}
-        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          INPUT: ${{ inputs.version }}
+        run: echo "version=${TAG:+${TAG#v}}${TAG:-$INPUT}" >> "$GITHUB_OUTPUT"
+
+      # The signing key has to arrive as the armored block gpg exports. Pasting one through a chat
+      # window loses the line breaks, and JReleaser then reports it as a missing *public* key,
+      # which sends you looking at the wrong secret. Say plainly what shape the value is in.
+      - name: Check the shape of the signing key
+        env:
+          KEY: ${{ secrets.GPG_SECRET_KEY }}
+        run: |
+          lines=$(printf '%s' "$KEY" | wc -l | tr -d ' ')
+          echo "lines: $lines"
+          case "$KEY" in
+            "-----BEGIN PGP PRIVATE KEY BLOCK-----"*) echo "starts with: armored PGP header" ;;
+            *) echo "starts with: something else" ;;
+          esac
+          if printf '%s' "$KEY" | base64 -d 2>/dev/null | grep -q "BEGIN PGP"; then
+            echo "base64: yes - the value decodes to an armored key"
+          else
+            echo "base64: no"
+          fi
+          if [ "$lines" -lt 2 ]; then
+            echo "::error::The key is on one line. gpg --armor --export-secret-keys writes many; re-add the secret from a file rather than a paste."
+            exit 1
+          fi
 
       - name: Build
         run: ./gradlew build -Pversion=${{ steps.version.outputs.version }}
@@ -45,7 +77,10 @@ jobs:
       # tag or create one. The secret key is read straight from the environment, with no keyring on
       # disk; its public half sits in jreleaser.yml, being public.
       - name: Sign and upload
-        run: ./gradlew jreleaserDeploy -Pversion=${{ steps.version.outputs.version }}
+        run: |
+          ./gradlew jreleaserDeploy \
+            -Pversion=${{ steps.version.outputs.version }} \
+            ${{ github.event_name == 'workflow_dispatch' && '-Djreleaser.dry.run=true' || '' }}
         env:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.SIGNING_PASSWORD }}
