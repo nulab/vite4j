@@ -77,6 +77,31 @@ the tags arrive on the page as text:
 | --- | --- |
 | `assetUrl(fn)` | Turns a manifest path into a URL. Defaults to `/` + path |
 | `modulePreload(true)` | Adds `<link rel="modulepreload">` per imported chunk. Off by default |
+| `scriptAttribute(name, value)` | Adds an attribute to the `<script>` tag |
+| `styleAttribute(name, value)` | Adds an attribute to every `<link rel="stylesheet">` tag |
+
+A `crossorigin`, a `nonce`, or whatever a CDN or a monitoring tool asks for:
+
+```java
+ViteAssets.builder(manifest)
+        .scriptAttribute("crossorigin", "anonymous")
+        .scriptAttribute("async")
+        .styleAttribute("data-turbo-track", "reload")
+        .build();
+```
+
+```html
+<link rel="stylesheet" href="/assets/main.css" data-turbo-track="reload">
+<script type="module" src="/assets/main.js" crossorigin="anonymous" async></script>
+```
+
+Called with a name alone, the attribute stands on its own, which is how `async` and `defer` carry
+their meaning. Attributes appear in the order they were added, and values are escaped the way the
+URLs already are.
+
+The attributes vite4j writes itself are refused: `src` and `type` on the script, `href` and `rel` on
+the stylesheets. Overriding one of those makes the tag silently wrong, so it throws where it is
+asked for rather than rendering something that does not work.
 
 ## Development
 

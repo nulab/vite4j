@@ -98,6 +98,47 @@ class RealManifestTest {
         assertTrue(tags.get(3).contains("/static/assets/main-"), tags.get(3));
     }
 
+
+    // The attributes have to land on every tag a real build produces, not just the one the
+    // hand-written fixtures happen to make. This entry needs two stylesheets, so a style attribute
+    // that only reached the first would pass elsewhere and fail here.
+    @Test
+    void putsTheAttributesOnEveryTagOfARealBuild() {
+        List<String> tags = ViteAssets.builder(manifest)
+                .assetUrl(path -> "/static/" + path)
+                .modulePreload(true)
+                .scriptAttribute("crossorigin", "anonymous")
+                .scriptAttribute("async")
+                .styleAttribute("data-turbo-track", "reload")
+                .build()
+                .tags("src/main.js");
+
+        List<String> stylesheets = tags.stream().filter(tag -> tag.contains("rel=\"stylesheet\"")).collect(java.util.stream.Collectors.toList());
+        assertEquals(2, stylesheets.size(), tags.toString());
+        assertTrue(stylesheets.stream().allMatch(tag -> tag.contains("data-turbo-track=\"reload\"")), stylesheets.toString());
+
+        String script = tags.get(tags.size() - 1);
+        assertTrue(script.contains("crossorigin=\"anonymous\" async>"), script);
+        assertTrue(script.contains("type=\"module\""), script);
+    }
+
+    // The preload links are the one tag kind that takes no attributes yet, so nothing should have
+    // leaked onto them from either set.
+    @Test
+    void leavesThePreloadLinksAlone() {
+        List<String> tags = ViteAssets.builder(manifest)
+                .modulePreload(true)
+                .scriptAttribute("async")
+                .styleAttribute("data-turbo-track", "reload")
+                .build()
+                .tags("src/main.js");
+
+        List<String> preloads = tags.stream().filter(tag -> tag.contains("rel=\"modulepreload\"")).collect(java.util.stream.Collectors.toList());
+        assertEquals(1, preloads.size(), tags.toString());
+        assertFalse(preloads.get(0).contains("data-turbo-track"), preloads.get(0));
+        assertFalse(preloads.get(0).contains("async"), preloads.get(0));
+    }
+
     private static List<String> kindsOf(List<String> tags) {
         return tags.stream()
                 .map(tag -> tag.startsWith("<link") ? "link" : "script")
