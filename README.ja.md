@@ -164,31 +164,6 @@ gh release create v0.1.0 --generate-notes
 | `CENTRAL_PORTAL_USER` | Central Portal の Account で発行する user token |
 | `CENTRAL_PORTAL_PASSWORD` | その token のパスワード側 |
 
-設定するときはファイルから流し込むか `printf` を使ってください。Web フォームへの貼り付けと `echo`
-は避けます。
-
-```
-gpg --armor --export-secret-keys <鍵ID> > key.asc
-gh secret set GPG_SECRET_KEY < key.asc
-printf '%s' '<パスフレーズ>' | gh secret set SIGNING_PASSWORD
-```
-
-どの値も 1 文字増減すると壊れますが、エラーは揃って別のものを指します。チャット越しに貼って改行が
-潰れた秘密鍵は、**公開鍵**が見つからないと報告されます。公開鍵がどれだけ正しくてもです。`echo` が
-足した改行を含むパスフレーズは `checksum mismatch in checksum of 20 bytes` として、`jreleaser-log`
-にしか残らないスタックトレースの奥に出ます。3 つのうち素直なのは Central の資格情報だけで、これは
-401 と言ってくれます。
-
-ワークフローは手動でも起動できます。リリースの全工程を dry run で歩き、何もアップロードしません。
-署名鍵を変えた後に試しておくと安心です。
-
-```
-gh workflow run publish.yml --ref main -f version=0.0.0-rehearsal
-```
-
-ただし Central には接続しないので、鍵とパスフレーズは検証できても、Portal の資格情報が正しいか
-どうかは分かりません。
-
 ## ライセンス
 
 MIT — [LICENSE.txt](LICENSE.txt) を参照してください。
