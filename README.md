@@ -166,13 +166,15 @@ release and on nothing else. If it fails, the log is kept as a `jreleaser-log` a
 The `version` in `gradle.properties` only ever names a local build. It is not the version that
 ships, and bumping it does nothing.
 
+The matching public key is checked in, in `jreleaser.yml` — a public key is public, and
+`JRELEASER_GPG_PUBLIC_KEY` is not read back out of the environment the way the secret key is.
+
 These repository secrets have to be set, under the `com.nulab-inc` namespace already verified on
 Central:
 
 | | |
 | --- | --- |
 | `GPG_SECRET_KEY` | Armored private key. JReleaser reads it from the environment — no keyring |
-| `GPG_PUBLIC_KEY` | Armored public key |
 | `SIGNING_PASSWORD` | Passphrase for that key |
 | `CENTRAL_PORTAL_USER` | Central Portal user token, generated under Account |
 | `CENTRAL_PORTAL_PASSWORD` | The token's password half |

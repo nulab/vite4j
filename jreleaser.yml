@@ -40,7 +40,38 @@ distributions:
 
 signing:
   active: ALWAYS
-  armored: true
+  pgp:
+    armored: true
+    publicKey: |
+      -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+      mQENBF01aUsBCACytxAisyyJItTcMe7OwbMOBRWfZR/toje/ZS+Bfb0OuhxFv4l1
+      vAb2O5zlTecgv2QWp1OaBHMp5a7zK/hDXVwm1l421iOSiaKQxPHImUjj8i+rdXKr
+      tEEDWzqFcjnMZSCKKrkdVCbSkOZQUzwYLF96MqAznHJH3vCnx/y973B5gssmNMCZ
+      8WJT6/KMbulwrNk6+te4APLwoF4AaiGJqY7NUe0EF51GwOqflUkK9GFoiRRHElED
+      iGG6Bfd4n99nxJBx0Cx6WDRNsYb7+lZWvNIVIZx7loAkL8gwSw8avaHNwAPVZn7H
+      ArbfglTmeCaJdcY/VJiz0T7FrSZEgNCs2CjHABEBAAG0GHl1aGtpbSA8a2ltQG51
+      bGFiLmNvLmpwPokBOAQTAQIAIgUCXTVpSwIbAwYLCQgHAwIGFQgCCQoLBBYCAwEC
+      HgECF4AACgkQ9rSh8jVHxF/BWAgAnBCCkkT7O5hoy7wTK9X7536z3Xpfe4kzOB7g
+      AynY6JyjVzblCiDap7O0ypkva4ot+f+e5BrfSpsu//PRvp+ym2MisesOhP1wNmgB
+      +cJMgf+6rShvrfpHXfvIPCks7ocRAeoECjtXPHcSG91fYKxjthn8NMMyjFdZj8+n
+      TccdNjz3ZM2YiZJQQqG1tLH7/O3/2qTiAZOcBTiSLPhqx3C1+IxIRPuDIVy47vjl
+      Gcj0C3pVX919QDYDRf0zEp8tsLA6AKKStjxEh7kMospB4NvSvoiV6BE71UxruFir
+      3ksy0XjYjsej4mRnN/8+fDUqYo3b5FBLitsvx8sFqQSKYLo/KbkBDQRdNWlLAQgA
+      wFBviA6adn8r6hPsAmJPYkxjSXJixJkRN09VANFMdPxZhDAotknwfwBmGnBUWfwY
+      AMp2Y/UeykTyjkZQkwTumznLjpwsMpO21ciIDDEsQ7vtWwYw09MYR+ICXGfGV8jJ
+      Le3+lGyReD4r3hIhpS1uTwhzZ9jVErhadY4jAIpBjb0YhkD/ytVGvA/lw6aM4hk2
+      yBuATdOJAcqjFYvgLvWFK6i0S+NyAVUmsZ7GsWdDxP68Ath+icPS9xmW38aJeyC9
+      Mv7JMoPTd8LlErNmVc11PNhNwSvRX9BOhuGYfsrbeEH9JdLGk8V0fG0/BTK9HBSk
+      Fdk+4FGtnV7Nso/hq3j2FwARAQABiQEfBBgBAgAJBQJdNWlLAhsMAAoJEPa0ofI1
+      R8RfPIYH/3p7bZKlHSltWUWKbAYjz7pUmDY+v2xYx/bgTyW2hBiM0XPf/+lkdw+/
+      CFqm8j1/3FLbJg9NhtfpY+SHs9tqHG4NKNP8M8hLM1tAFEGyqvvZbmXQmMIVmtto
+      adxRTMnR+yoveiVALAJiE8lkE5S8G7l9YKIdlQhRcC0v+LpFyb5tyTntuL/saLrn
+      BDdA8w4w4uK58hsP2FNZGVydWVmAbhrZF48fbSpQ9SQjbXHZRfyLERiXZGAN1+yD
+      6JTkS4VtB3zEJSxWvv+RVp0dC6bKimfqVLS2aiVqs0uDKDQnuYvPqbKZAQqvj9mZ
+      Aay0LBQYjVy4TI37tzEnlUM0b1UIn+4=
+      =m1q8
+      -----END PGP PUBLIC KEY BLOCK-----
 
 deploy:
   active: ALWAYS

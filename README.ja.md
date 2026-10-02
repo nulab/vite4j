@@ -151,13 +151,15 @@ gh release create v0.1.0 --generate-notes
 `gradle.properties` の `version` はローカルビルドの名前でしかありません。公開されるバージョンでは
 ないので、上げても何も起きません。
 
-必要なリポジトリシークレットは次の 5 つです。Central で検証済みの `com.nulab-inc` ネームスペースを
+対になる公開鍵は `jreleaser.yml` にそのまま書いてあります。公開鍵は公開されるものですし、
+`JRELEASER_GPG_PUBLIC_KEY` は秘密鍵と違って環境変数から読み戻されないためです。
+
+必要なリポジトリシークレットは次の 4 つです。Central で検証済みの `com.nulab-inc` ネームスペースを
 使います。
 
 | | |
 | --- | --- |
 | `GPG_SECRET_KEY` | armored 形式の秘密鍵。JReleaser が環境変数から読むので keyring は不要 |
-| `GPG_PUBLIC_KEY` | armored 形式の公開鍵 |
 | `SIGNING_PASSWORD` | 上記の鍵のパスフレーズ |
 | `CENTRAL_PORTAL_USER` | Central Portal の Account で発行する user token |
 | `CENTRAL_PORTAL_PASSWORD` | その token のパスワード側 |
