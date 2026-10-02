@@ -10,6 +10,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
+    # The release already exists by the time this runs, so nothing here writes to the repository.
+    permissions:
+      contents: read
+
     steps:
       - uses: actions/checkout@v7
         with:
@@ -45,7 +49,8 @@ jobs:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.SIGNING_PASSWORD }}
-          # A Central Portal user token, not the retired OSSRH credentials.
+          # A Central Portal user token. backlog4j holds the same thing under OSSRH_* names, kept
+          # from before the Portal replaced OSSRH; the names there say nothing about the values.
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USER }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
