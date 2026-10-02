@@ -1,0 +1,53 @@
+project:
+  name: vite4j
+  description: Read Vite's build manifest from a JVM backend and render the tags a page needs.
+  longDescription: file:README.md
+  links:
+    homepage: https://github.com/nulab/vite4j
+  authors:
+    - Tatsufumi Katayama
+  license: MIT
+  languages:
+    java:
+      groupId: com.nulab-inc
+      version: 11
+      artifactId: vite4j
+      multiProject: false
+  inceptionYear: 2026
+  tags:
+    - vite
+    - manifest
+    - java
+    - frontend
+
+checksum:
+  individual: false
+  artifacts: false
+  files: false
+
+catalog:
+  enabled: true
+
+distributions:
+  vite4j:
+    type: JAVA_BINARY
+    artifacts:
+      - path: build/libs/{{projectName}}-{{projectVersion}}.jar
+      - path: build/libs/{{projectName}}-{{projectVersion}}-sources.jar
+        platform: sources
+      - path: build/libs/{{projectName}}-{{projectVersion}}-javadoc.jar
+        platform: javadoc
+
+signing:
+  active: ALWAYS
+  armored: true
+
+deploy:
+  active: ALWAYS
+  maven:
+    mavenCentral:
+      sonatype:
+        active: RELEASE
+        url: https://central.sonatype.com/api/v1/publisher
+        stagingRepositories:
+          - build/staging-deploy

@@ -134,6 +134,34 @@ ManifestParser parser = json -> { /* → Map<String, Chunk> */ };
 
 順序は import 側が先、自分の CSS が最後です。モジュールの実行順であり、Vite が出力する順序でもあります。共有 CSS は 1 回だけリンクされ、循環しても停止し、マニフェストに無いチャンクは例外を投げずにスキップします。
 
+## リリース
+
+GitHub の Release を公開すると Maven Central に publish されます。バージョンはタグから読むので
+（`v0.1.0` でも `0.1.0` でも `0.1.0` と解釈されます）、事前にリポジトリを書き換える必要はありません。
+
+```
+gh release create v0.1.0 --generate-notes
+```
+
+あとは `.github/workflows/publish.yml` がタグの内容をビルドして成果物をステージし、JReleaser が
+署名して [Central Portal](https://central.sonatype.com) にアップロードします。Central に上げた
+バージョンは差し替えも取り下げもできないため、このワークフローは Release の公開時にのみ動きます。
+失敗した場合、ログは実行結果に `jreleaser-log` として残ります。
+
+`gradle.properties` の `version` はローカルビルドの名前でしかありません。公開されるバージョンでは
+ないので、上げても何も起きません。
+
+必要なリポジトリシークレットは次の 5 つです。Central で検証済みの `com.nulab-inc` ネームスペースを
+使います。
+
+| | |
+| --- | --- |
+| `GPG_SECRET_KEY` | armored 形式の秘密鍵。JReleaser が環境変数から読むので keyring は不要 |
+| `GPG_PUBLIC_KEY` | armored 形式の公開鍵 |
+| `SIGNING_PASSWORD` | 上記の鍵のパスフレーズ |
+| `CENTRAL_PORTAL_USER` | Central Portal の Account で発行する user token |
+| `CENTRAL_PORTAL_PASSWORD` | その token のパスワード側 |
+
 ## ライセンス
 
 MIT — [LICENSE.txt](LICENSE.txt) を参照してください。

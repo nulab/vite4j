@@ -1,0 +1,65 @@
+name: Publish to central repository
+
+# Cutting a GitHub release is the deliberate act; this only carries it through to Central. A
+# version there can neither be replaced nor withdrawn, so nothing publishes on a plain push.
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    # The release already exists by the time this runs, so nothing here writes to the repository.
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: gradle
+
+      - run: chmod +x gradlew
+
+      # The tag is the single source of truth for the version, so gradle.properties never has to
+      # be kept in step with it. v0.1.0 and 0.1.0 are both accepted.
+      - name: Read the version off the tag
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: ./gradlew build -Pversion=${{ steps.version.outputs.version }}
+
+      - name: Stage the artifacts
+        run: ./gradlew publish -Pversion=${{ steps.version.outputs.version }}
+
+      # Deploy only: the release already exists, so JReleaser signs and uploads but does not try to
+      # tag or create one. The key is read straight from the environment, with no keyring on disk.
+      - name: Sign and upload
+        run: ./gradlew jreleaserDeploy -Pversion=${{ steps.version.outputs.version }}
+        env:
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.SIGNING_PASSWORD }}
+          # A Central Portal user token. backlog4j holds the same thing under OSSRH_* names, kept
+          # from before the Portal replaced OSSRH; the names there say nothing about the values.
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USER }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Keep the log from a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jreleaser-log
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

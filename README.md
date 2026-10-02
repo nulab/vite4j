@@ -149,6 +149,34 @@ Imports come first, the chunk's own stylesheets last — the order the modules r
 Vite emits. A shared stylesheet is linked once, cycles terminate, and a chunk the manifest does not
 describe is skipped rather than throwing.
 
+## Releasing
+
+Cutting a GitHub release publishes to Maven Central. The tag carries the version — `v0.1.0` and
+`0.1.0` are both read as `0.1.0` — so nothing in the repository has to be edited first.
+
+```
+gh release create v0.1.0 --generate-notes
+```
+
+`.github/workflows/publish.yml` then builds the tag, stages the artifacts, and hands them to
+JReleaser, which signs them and uploads them to the [Central Portal](https://central.sonatype.com).
+A version on Central can neither be replaced nor withdrawn, so the workflow runs on a published
+release and on nothing else. If it fails, the log is kept as a `jreleaser-log` artifact on the run.
+
+The `version` in `gradle.properties` only ever names a local build. It is not the version that
+ships, and bumping it does nothing.
+
+These repository secrets have to be set, under the `com.nulab-inc` namespace already verified on
+Central:
+
+| | |
+| --- | --- |
+| `GPG_SECRET_KEY` | Armored private key. JReleaser reads it from the environment — no keyring |
+| `GPG_PUBLIC_KEY` | Armored public key |
+| `SIGNING_PASSWORD` | Passphrase for that key |
+| `CENTRAL_PORTAL_USER` | Central Portal user token, generated under Account |
+| `CENTRAL_PORTAL_PASSWORD` | The token's password half |
+
 ## License
 
 MIT — see [LICENSE.txt](LICENSE.txt).
