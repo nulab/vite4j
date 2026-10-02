@@ -42,7 +42,20 @@ jobs:
         env:
           TAG: ${{ github.event.release.tag_name }}
           INPUT: ${{ inputs.version }}
-        run: echo "version=${TAG:+${TAG#v}}${TAG:-$INPUT}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "$TAG" ]; then
+            version="${TAG#v}"
+          else
+            version="$INPUT"
+          fi
+          # A version on Central cannot be taken back, so a mangled one must not get that far. The
+          # first try at this condensed the two branches into one expression and wrote both of them,
+          # which published 0.1.0v0.1.0 and left 0.1.0 unused.
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-.+][0-9A-Za-z.-]+)?$'; then
+            echo "::error::\"$version\" is not a version. The tag was \"$TAG\"."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       # The signing key has to arrive as the armored block gpg exports. Pasting one through a chat
       # window loses the line breaks, and JReleaser then reports it as a missing *public* key,
