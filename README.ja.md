@@ -70,6 +70,29 @@ assets.html("src/main.tsx");
 | --- | --- |
 | `assetUrl(fn)` | マニフェストのパスを URL にする。既定は `/` を前置 |
 | `modulePreload(true)` | import したチャンクごとに `<link rel="modulepreload">` を出す。既定は off |
+| `scriptAttribute(name, value)` | `<script>` タグに属性を足す |
+| `styleAttribute(name, value)` | すべての `<link rel="stylesheet">` タグに属性を足す |
+
+`crossorigin` や `nonce`、CDN や監視ツールが要求する属性のためのものです。
+
+```java
+ViteAssets.builder(manifest)
+        .scriptAttribute("crossorigin", "anonymous")
+        .scriptAttribute("async")
+        .styleAttribute("data-turbo-track", "reload")
+        .build();
+```
+
+```html
+<link rel="stylesheet" href="/assets/main.css" data-turbo-track="reload">
+<script type="module" src="/assets/main.js" crossorigin="anonymous" async></script>
+```
+
+名前だけを渡すと値なしで出力されます。`async` や `defer` のように、存在することで意味を持つ属性の
+ためです。属性は追加した順に並び、値は URL と同じエスケープを通ります。
+
+vite4j 自身が書く属性は拒否されます。script の `src` と `type`、stylesheet の `href` と `rel` です。
+これらを上書きするとタグが黙って壊れるので、動かないものを出力せず、指定した場所で例外になります。
 
 ## 開発時
 
