@@ -133,6 +133,21 @@ not need to know, and does not need restarting. Add `public/hot` to `.gitignore`
 and the dev server agree on what to call the host. Behind Docker or a reverse proxy they may not, and
 `server.origin` in the Vite config is then the URL to write instead.
 
+## Without a build
+
+An application wired to vite4j reads a manifest before it starts. With nothing built and no dev
+server running, that read throws, and every test that renders a page fails with it — for a reason
+that has nothing to do with what the test was checking.
+
+```java
+ViteTags vite = ViteTags.none();
+```
+
+renders nothing, for any entry. `html()` returns an empty string.
+
+Not only for tests. A server that answers with JSON and renders no pages has no use for a manifest
+either, and this is how it says so.
+
 ## Another JSON library
 
 `ManifestParser` is one method:

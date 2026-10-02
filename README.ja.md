@@ -120,6 +120,21 @@ ViteTags vite = HotFile.at(Paths.get("public/hot")).withReactRefresh().or(assets
 
 `resolvedUrls.local[0]` は Vite が起動時に表示する URL です。ブラウザと dev server がホスト名の認識を共有していれば、これを書けば済みます。Docker やリバースプロキシを挟むと一致しないことがあり、その場合は Vite 設定の `server.origin` に指定した URL を書いてください。
 
+## ビルドが無いとき
+
+vite4j を組み込んだアプリケーションは、起動前にマニフェストを読みます。何もビルドされておらず dev
+server も動いていない状態ではこの読み込みが失敗し、ページを描画するテストが軒並み落ちます。しかも
+テストが確かめたかったこととは何の関係もない理由で、です。
+
+```java
+ViteTags vite = ViteTags.none();
+```
+
+どのエントリに対しても何も出力しません。`html()` は空文字列を返します。
+
+テスト専用というわけではありません。JSON だけを返してページを描画しないサーバもマニフェストを必要と
+しないので、それを表明する手段になります。
+
 ## 別の JSON ライブラリを使う
 
 `ManifestParser` はメソッド 1 つです。
