@@ -132,6 +132,19 @@ class ViteAssetsTest {
                 assets.scriptTag("main.js").orElse(null));
     }
 
+    // HTML reads the two as one attribute, so rendering both would put it on the tag twice and the
+    // browser would take the first - the opposite of the last-one-wins the caller was promised.
+    @Test
+    void treatsAttributeNamesDifferingOnlyInCaseAsOne() {
+        ViteAssets assets = ViteAssets.builder(manifest)
+                .scriptAttribute("crossorigin", "anonymous")
+                .scriptAttribute("CROSSORIGIN", "use-credentials")
+                .build();
+
+        assertEquals("<script type=\"module\" src=\"/assets/index.js\" crossorigin=\"use-credentials\"></script>",
+                assets.scriptTag("main.js").orElse(null));
+    }
+
     // The same escaping the URLs already get. A value carrying a quote would otherwise end the attribute.
     @Test
     void escapesAnAttributeValue() {

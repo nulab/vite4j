@@ -154,7 +154,8 @@ public final class ViteAssets implements ViteTags {
         /**
          * Adds an attribute to the {@code <script>} tag, for a {@code crossorigin}, a {@code nonce}, or
          * whatever a CDN or a monitoring tool asks for. Attributes render in the order they were added,
-         * and adding the same name twice keeps the last value.
+         * and adding the same name twice keeps the last value. Names are matched without regard to case,
+         * as HTML reads them.
          *
          * @throws IllegalArgumentException if the name is not an attribute name, or is one vite4j writes
          *                                  itself ({@code src}, {@code type})
@@ -185,6 +186,11 @@ public final class ViteAssets implements ViteTags {
             return styleAttribute(name, null);
         }
 
+        /**
+         * HTML does not tell {@code crossorigin} and {@code CROSSORIGIN} apart, so neither does the map
+         * they are collected in: keeping both would render one attribute twice, and the browser would
+         * take the first while the caller was promised the last.
+         */
         private static String checked(String name, Set<String> reserved) {
             if (name == null || name.isEmpty()) {
                 throw new IllegalArgumentException("attribute name must not be empty");
@@ -192,10 +198,11 @@ public final class ViteAssets implements ViteTags {
             if (!NAME.matcher(name).matches()) {
                 throw new IllegalArgumentException("\"" + name + "\" is not an attribute name");
             }
-            if (reserved.contains(name.toLowerCase(Locale.ROOT))) {
+            String normalized = name.toLowerCase(Locale.ROOT);
+            if (reserved.contains(normalized)) {
                 throw new IllegalArgumentException(name + " is written by vite4j and cannot be overridden");
             }
-            return name;
+            return normalized;
         }
 
         public ViteAssets build() {
