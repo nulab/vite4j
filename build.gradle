@@ -1,13 +1,16 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'signing'
     id 'org.jreleaser' version '1.26.0'
 }
 
 group = 'com.nulab-inc'
-archivesBaseName = 'vite4j'
+// CI passes -Pversion read off the release tag; gradle.properties only names local builds.
 version = project.property('version')
+
+base {
+    archivesName = 'vite4j'
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -46,7 +49,7 @@ javadoc {
 
 jar {
     manifest {
-        attributes('Implementation-Title': archivesBaseName,
+        attributes('Implementation-Title': base.archivesName.get(),
                 'Implementation-Version': archiveVersion,
                 'Automatic-Module-Name': 'com.nulabinc.vite4j')
     }
