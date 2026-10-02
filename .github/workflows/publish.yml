@@ -1,21 +1,21 @@
 name: Publish to central repository
 
-# Never on a push. A version on Central can neither be replaced nor withdrawn, so releasing stays
-# something a person decides to do, having looked at what is about to go out.
+# Cutting a GitHub release is the deliberate act; this only carries it through to Central. A
+# version there can neither be replaced nor withdrawn, so nothing publishes on a plain push.
 on:
-  workflow_dispatch
+  release:
+    types: [published]
 
 jobs:
   publish:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '11'
@@ -23,34 +23,36 @@ jobs:
 
       - run: chmod +x gradlew
 
+      # The tag is the single source of truth for the version, so gradle.properties never has to
+      # be kept in step with it. v0.1.0 and 0.1.0 are both accepted.
+      - name: Read the version off the tag
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build -Pversion=${{ steps.version.outputs.version }}
 
       - name: Stage the artifacts
-        run: ./gradlew publish
+        run: ./gradlew publish -Pversion=${{ steps.version.outputs.version }}
 
-      - name: Import the signing key
-        env:
-          GPG_TTY: /dev/tty
-        run: echo "${{ secrets.SIGNING_SECRET_KEY_RING_FILE }}" | base64 --decode | gpg --batch --import
-
+      # Deploy only: the release already exists, so JReleaser signs and uploads but does not try to
+      # tag or create one. The key is read straight from the environment, with no keyring on disk.
       - name: Sign and upload
-        run: |
-          ./gradlew \
-            -Djreleaser.signing.active=ALWAYS \
-            -Djreleaser.signing.mode=COMMAND \
-            jreleaserFullRelease
+        run: ./gradlew jreleaserDeploy -Pversion=${{ steps.version.outputs.version }}
         env:
-          JRELEASER_SIGNING_MODE: COMMAND
-          JRELEASER_GPG_KEYNAME: ${{ secrets.SIGNING_KEY_ID }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.SIGNING_PASSWORD }}
-          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USER_NAME }}
-          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          # A Central Portal user token, not the retired OSSRH credentials.
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USER }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Keep the log from a failed run
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jreleaser-log
           path: |

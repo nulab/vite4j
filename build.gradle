@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
-    id 'org.jreleaser' version '1.17.0'
+    id 'org.jreleaser' version '1.26.0'
 }
 
 group = 'com.nulab-inc'
@@ -89,4 +89,10 @@ publishing {
             url = uri(layout.buildDirectory.dir('staging-deploy'))
         }
     }
+}
+
+// Without this the Gradle plugin ignores jreleaser.yml entirely and falls back to its defaults,
+// which carry no deploy, signing or distribution settings at all.
+jreleaser {
+    configFile = file('jreleaser.yml')
 }
